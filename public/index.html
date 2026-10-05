@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2e7d32">
+  <title>Manejo Agrícola - Controle Financeiro</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f0f4f1; margin: 0; padding: 20px; }
+    header { background: #2e7d32; color: white; padding: 15px 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .container { max-width: 900px; margin: 20px auto; }
+    .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    input, select, button { width: 100%; padding: 12px; margin-top: 8px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+    button { background: #2e7d32; color: white; border: none; font-weight: bold; cursor: pointer; }
+    button:hover { background: #1b5e20; }
+    .btn-secondary { background: #1976d2; margin-top: 0; }
+    .btn-secondary:hover { background: #1565c0; }
+    .btn-danger { background: #c62828; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; width: auto; font-weight: bold; }
+    .btn-danger:hover { background: #b71c1c; }
+    .hidden { display: none; }
+    .row { display: flex; gap: 15px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background-color: #e8f5e9; }
+    .tab-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
+    .tab-btn { background: #e0e0e0; color: #333; }
+    .tab-btn.active { background: #2e7d32; color: white; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h2>🌾 Gestão e Manejo Agrícola</h2>
+    <div id="status-usuario"></div>
+  </header>
+
+  <div class="container">
+    
+    <!-- TELA DE LOGIN -->
+    <div id="tela-login" class="card">
+      <h3>Acesso ao Sistema</h3>
+      <form id="form-login">
+        <input type="text" id="login-user" placeholder="Usuário (Padrão: agricultor)" required>
+        <input type="password" id="login-pass" placeholder="Senha (Padrão: 123)" required>
+        <button type="submit">Entrar no Sistema</button>
+      </form>
+    </div>
+
+    <!-- TELA PRINCIPAL (APÓS LOGIN) -->
+    <div id="tela-app" class="hidden">
+      
+      <!-- ENTRADA DE ESTOQUE (NOVO OU REABASTECIMENTO) -->
+      <div class="card">
+        <h3>1. Entrada de Estoque / Compras</h3>
+        
+        <div class="tab-buttons">
+          <button type="button" class="tab-btn active" id="btn-tab-novo" onclick="alternarAbaCompra('novo')">Novo Produto</button>
+          <button type="button" class="tab-btn" id="btn-tab-reabastecer" onclick="alternarAbaCompra('reabastecer')">Reabastecer Existente</button>
+        </div>
+
+        <!-- FORMULÁRIO 1A: NOVO PRODUTO -->
+        <form id="form-compra-nova">
+          <input type="text" id="c-nome" placeholder="Nome do Produto (ex: Glifosato 5L, Semente Milho)" required>
+          <div class="row">
+            <input type="number" step="0.01" id="c-qtd" placeholder="Quantidade Comprada" required>
+            <select id="c-unidade">
+              <optgroup label="Sementes e Pacotes">
+                <option value="Sementes">Sementes (sem)</option>
+                <option value="Pacote">Pacote (pct)</option>
+                <option value="Unidade">Unidade (un)</option>
+                <option value="Saca_Sementes">Saca de Sementes (60.000 sem)</option>
+                <option value="Caixa">Caixa (cx)</option>
+                <option value="Dose">Dose</option>
+              </optgroup>
+              <optgroup label="Líquidos / Volume">
+                <option value="L">Litros (L)</option>
+                <option value="ml">Mililitros (ml)</option>
+                <option value="Galão">Galão (gal)</option>
+                <option value="m3">Metro Cúbico (m³)</option>
+              </optgroup>
+              <optgroup label="Sólidos / Peso">
+                <option value="Kg">Quilos (Kg)</option>
+                <option value="g">Gramas (g)</option>
+                <option value="t">Tonelada (t)</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="row">
+            <select id="c-tipo-preco">
+              <option value="total">Informar Valor TOTAL Pago (R$)</option>
+              <option value="unitario">Informar Valor UNITÁRIO/PARCIAL (R$)</option>
+            </select>
+            <input type="number" step="0.01" id="c-preco" placeholder="Valor (R$)" required>
+          </div>
+          <button type="submit">Cadastrar Novo Produto</button>
+        </form>
+
+        <!-- FORMULÁRIO 1B: REABASTECER EXISTENTE -->
+        <form id="form-reabastecer" class="hidden">
+          <select id="r-produto" required>
+            <option value="">Selecione o Produto para Reabastecer...</option>
+          </select>
+          <div class="row">
+            <input type="number" step="0.01" id="r-qtd" placeholder="Qtd Adicionada" required>
+            <select id="r-unidade">
+              <optgroup label="Sementes e Pacotes">
+                <option value="Sementes">Sementes (sem)</option>
+                <option value="Pacote">Pacote (pct)</option>
+                <option value="Unidade">Unidade (un)</option>
+                <option value="Saca_Sementes">Saca de Sementes (60.000 sem)</option>
+                <option value="Caixa">Caixa (cx)</option>
+                <option value="Dose">Dose</option>
+              </optgroup>
+              <optgroup label="Líquidos / Volume">
+                <option value="L">Litros (L)</option>
+                <option value="ml">Mililitros (ml)</option>
+                <option value="Galão">Galão (gal)</option>
+                <option value="m3">Metro Cúbico (m³)</option>
+              </optgroup>
+              <optgroup label="Sólidos / Peso">
+                <option value="Kg">Quilos (Kg)</option>
+                <option value="g">Gramas (g)</option>
+                <option value="t">Tonelada (t)</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="row">
+            <select id="r-tipo-preco">
+              <option value="total">Informar Valor TOTAL Pago (R$)</option>
+              <option value="unitario">Informar Valor UNITÁRIO/PARCIAL (R$)</option>
+            </select>
+            <input type="number" step="0.01" id="r-preco" placeholder="Valor (R$)" required>
+          </div>
+          <button type="submit">Adicionar ao Estoque Existente</button>
+        </form>
+
+        <!-- GERENCIADOR / LISTA DE PRODUTOS -->
+        <h4 style="margin-top: 25px; color: #2e7d32;">Produtos no Estoque</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome do Produto</th>
+              <th>Estoque Restante</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-produtos-gerenciador"></tbody>
+        </table>
+      </div>
+
+      <!-- LANÇAR MANEJO -->
+      <div class="card">
+        <h3>2. Lançar Manejo / Aplicação (Gasto Proporcional)</h3>
+        <form id="form-manejo">
+          <div class="row">
+            <select id="m-produto" required><option value="">Selecione o Produto...</option></select>
+            <input type="text" id="m-talhao" placeholder="Talhão / Área (ex: Talhão 02)" required>
+          </div>
+          <div class="row">
+            <input type="number" step="0.01" id="m-qtd" placeholder="Qtd Aplicada (ml, g, sementes, etc)" required>
+            <input type="date" id="m-data" required>
+          </div>
+          <button type="submit">Lançar Manejo Proporcional</button>
+        </form>
+      </div>
+
+      <!-- RELATÓRIO DO MÊS E POR TALHÃO -->
+      <div class="card">
+        <h3>3. Relatório de Gastos Parciais</h3>
+        <div class="row">
+          <input type="month" id="filtro-mes">
+          <select id="filtro-talhao">
+            <option value="">Todos os Talhões</option>
+          </select>
+          <button type="button" onclick="buscarRelatorio()">Filtrar</button>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+          <h4 id="total-mes" style="color: #2e7d32; margin: 0;">Total Gasto: R$ 0,00</h4>
+          <button type="button" class="btn-secondary" onclick="baixarExcel()" style="width: auto; padding: 8px 16px;">📥 Baixar Excel</button>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Talhão</th>
+              <th>Produto</th>
+              <th>Qtd Usada</th>
+              <th>Custo (R$)</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-relatorio"></tbody>
+        </table>
+      </div>
+
+      <!-- ALTERAR SENHA DO USUÁRIO -->
+      <div class="card">
+        <h3>4. Configurações de Segurança</h3>
+        <form id="form-alterar-senha">
+          <div class="row">
+            <input type="password" id="senha-atual" placeholder="Senha Atual" required>
+            <input type="password" id="nova-senha" placeholder="Nova Senha" required>
+          </div>
+          <button type="submit" class="btn-secondary">Atualizar Minha Senha</button>
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

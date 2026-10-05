@@ -1,0 +1,15 @@
+{
+  "name": "Manejo e Finanças Agrícolas",
+  "short_name": "ManejoAgrícola",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2e7d32",
+  "theme_color": "#2e7d32",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/628/628283.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
